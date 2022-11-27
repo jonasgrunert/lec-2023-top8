@@ -352,4 +352,6 @@ await build();
 
 if (Deno.args[0] === "serve") {
   Deno.serve((req) => serveDir(req, { fsRoot: "dist" }));
+} else {
+  await Deno.writeTextFile("dist/riot.txt", Deno.env.get("RIOT_KEY") ?? "");
 }
