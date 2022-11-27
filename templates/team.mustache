@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LEC 2023 Top 8- {{name}}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/team.css">
+    <script src="/index.js"></script>
+</head>
+<body>
+    <header class="team">
+        <h2>{{splits.0.team.team.name}}</h2>
+        <img src="{{{splits.0.team.team.logo}}}" alt="{{splits.0.team.team.name}} Logo" />
+    </header>
+    <section>
+    {{#stats}}
+        <div>
+            <h4>
+                {{name}}
+                <button class="faq" id="{{name}}-faq">❔</button>
+                <dialog id="{{name}}-faq-modal">
+                    <form method="dialog">
+                        <h3>Help {{name}}</h3>
+                        <p>{{{helptext}}}</p>
+                        <button type="submit" style="float: right">Close</button>
+                    </form>
+                </dialog>
+            <h4>
+            <h1 class="{{name}}">{{percentage}}%</h1>
+        </div>
+    {{/stats}}
+    </section>
+    <table>
+        <colgroup>
+            <col />
+            <col />
+            <col class="right"/>
+            <col class="right"/>
+        </colgroup>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Team</th>
+                <th>Last 4 games</th>
+                <th>Record</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{#splits}}
+            {{#team}}
+            <tr>
+                <td class="{{result}} tight">{{position}}</td>
+                <td>{{year}} {{split}} {{half}}</td>
+                {{#team}}
+                <td>
+                    {{#last4}}
+                        {{#.}}✔{{/.}}{{^.}}❌{{/.}}
+                    {{/last4}}
+                </td>
+                <td class="right">{{wins}} - {{losses}}</td>
+                {{/team}}
+            </tr>
+            {{/team}}
+        {{/splits}}
+        </tbody>
+    </table>
+    {{> footer}}
+</body>
+</html>

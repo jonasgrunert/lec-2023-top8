@@ -1,0 +1,3 @@
+[build]
+  command = "./src/build.sh"
+  publish = "dist/

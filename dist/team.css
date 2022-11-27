@@ -1,0 +1,32 @@
+header.team,
+section div {
+  flex-direction: column;
+}
+header.team,
+section div,
+section {
+  justify-content: space-evenly;
+}
+img {
+  max-height: 8em;
+  margin-bottom: 0.8em;
+}
+div > * {
+  margin: 0.3em;
+}
+.tied {
+  color: yellow;
+}
+.safe {
+  color: green;
+}
+.out {
+  color: red;
+}
+.faq {
+  padding: 0;
+  border-radius: 50%;
+  width: 2em;
+  height: 2em;
+  line-height: 1.5;
+}

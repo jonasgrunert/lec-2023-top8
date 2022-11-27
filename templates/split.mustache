@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LEC 2023 Top 8 - {{year}} {{split}} {{half}}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/split.css">
+    <script src="/index.js"></script>
+</head>
+<body>
+    <header>
+        <h2>{{#prev}}<a href="/splits/{{name}}"><</a>{{/prev}}</h2>
+        <h2>{{year}} {{split}} {{half}}</h2>
+        <h2>{{#next}}<a href="/splits/{{name}}">></a>{{/next}}</h2>
+    </header>
+    <table>
+        <colgroup>
+            <col />
+            <col />
+            <col class="right"/>
+            <col class="right"/>
+        </colgroup>
+        <thead>
+            <tr>
+                <th></th>
+                <th>Team</th>
+                <th>Last 4 games</th>
+                <th>Record</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{#table}}
+            {{#team}}
+            <tr>
+                <td class="{{result}} tight">{{position}}</td>
+                <td>{{name}}</td>
+                <td>
+                    {{#last4}}
+                        {{#.}}✔{{/.}}{{^.}}❌{{/.}}
+                    {{/last4}}
+                </td>
+                <td class="right">{{wins}} - {{losses}}</td>
+            </tr>
+            {{/team}}
+        {{/table}}
+        </tbody>
+    </table>
+    {{> footer}}
+</body>
+</html>

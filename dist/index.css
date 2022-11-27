@@ -1,0 +1,33 @@
+header,
+section,
+section div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+td.tied {
+  border-left: 4px yellow solid;
+}
+td.safe {
+  border-left: 4px green solid;
+}
+td.out {
+  border-left: 4px red solid;
+}
+table {
+  table-layout: auto;
+}
+th:nth-child(n + 3),
+td:nth-child(n + 3) {
+  text-align: end;
+}
+footer {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: space-around;
+  text-align: center;
+}
+section:last-of-type {
+  margin-top: 3em;
+}
