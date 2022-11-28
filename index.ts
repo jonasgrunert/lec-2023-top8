@@ -288,8 +288,9 @@ async function build() {
   await Promise.all(
     Object.entries(teams).map(([name, { short }]) =>
       Deno.mkdir(`dist/teams/${short}`, { recursive: true }).then(() => {
-        const splits = standings.map(({ table, ...rest }) => ({
+        const splits = standings.map(({ table, name: path, ...rest }) => ({
           ...rest,
+          path,
           team: table.find((t) => t.team.name === name)!,
         }));
         const percentage = (kind: string) =>
