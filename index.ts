@@ -273,6 +273,8 @@ async function build() {
             split,
             {
               ...s,
+              umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
+              umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
               prev: i === 0 ? null : standings.at(i - 1),
               next: standings.at(i + 1),
             },
@@ -304,6 +306,8 @@ async function build() {
           mustache.render(
             team,
             {
+              umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
+              umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
               name,
               splits,
               stats: [
@@ -341,6 +345,8 @@ async function build() {
     mustache.render(
       main,
       {
+        umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
+        umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
         teams: Object.entries(teams).map(([name, info]) => ({ name, info })),
         splits: entries,
       },
