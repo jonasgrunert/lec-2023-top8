@@ -17,7 +17,7 @@
         <p>This website shows how all the teams in the LEC for the 2023 performed in the 16 single round robins since the LECs inception and franchising. Based on this infromation we determine if and how they would have progressed to the round of the Top 8 in the new LEC format starting in 2023.</p>
     </section>
     <h4>Teams</h4>
-    <section>
+    <section class="teams">
         {{#teams}}
         <a href="/teams/{{info.short}}">
             <figure>
@@ -29,7 +29,7 @@
         {{/teams}}
     </section>
     <h4>Splits</h4>
-    <section>
+    <section class="splits">
         {{#splits}}
         <a href="/splits/{{name}}">
             <p>{{year}} {{split}} {{half}}</p>

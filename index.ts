@@ -194,9 +194,14 @@ class Team {
       return [teams[1], teams[0]];
     }
     return teams.sort((a, b) => {
-      const tiebreaker = b.tiebreaker(teams) - a.tiebreaker(teams);
-      if (tiebreaker === 0)
-        return b.strengthOfVictory(allTeams) - a.strengthOfVictory(allTeams);
+      let tiebreaker = b.tiebreaker(teams) - a.tiebreaker(teams);
+      if (tiebreaker === 0) {
+        tiebreaker =
+          b.strengthOfVictory(allTeams) - a.strengthOfVictory(allTeams);
+      }
+      if (tiebreaker === 0) {
+        tiebreaker = b.victoryTime - a.victoryTime;
+      }
       return tiebreaker;
     });
   }
@@ -341,7 +346,11 @@ async function build() {
                   name: "tied",
                   helptext: `Tied means this team could have made it to the round of the top 8 as its record was good enough to force a tiebreaker.
             Seeding with tiebreakers is done in multiple steps.
-            <ol><li>Better record in the last 4 games</li><li>Better head-to-head of all involved teams</li><li>Shortest victory time in sum during the season</li></ol>`,
+            <ol>
+            <li>Best Head to Head score of all teams</li>
+            <li>Highest Strength of Victory. The strength of victory is determined by a point system wherer a win against higher ranked teams brings more points.</li>
+            <li>Lowest victory time during the regular season. This places the teams in a bracket for tiebreaker games, which cannot be predicted.</li>
+            </ol>`,
                 },
                 {
                   name: "out",
