@@ -108,6 +108,7 @@ class Team {
   #short: string;
   #logo: string;
   #games: Game[] = [];
+  #placement = 0;
 
   constructor(name: string, short: string, logo: string) {
     this.#name = name;
@@ -155,10 +156,28 @@ class Team {
     return this.#games.filter((g) => g.win).reduce((p, c) => p + c.length, 0);
   }
 
+  get placement() {
+    return this.#placement;
+  }
+
+  set placement(place: number) {
+    this.#placement = place;
+  }
+
   tiebreaker(against: Team[]): number {
     return this.#games.filter(
       (g) => g.win && against.map((t) => t.name).includes(g.against),
     ).length;
+  }
+
+  strengthOfVictory(allTeams: Team[][]) {
+    return this.#games
+      .filter((g) => g.win)
+      .reduce(
+        (p, c) =>
+          p + allTeams.flat().find((t) => t.name === c.against)!.placement,
+        0,
+      );
   }
 
   static compare(a: Team, b: Team): number {
@@ -167,7 +186,7 @@ class Team {
     return 0;
   }
 
-  static head2head(...teams: Team[]): Team[] {
+  static head2head(teams: Team[], allTeams: Team[][]): Team[] {
     if (teams.length === 2) {
       if (teams[0].#games.find((g) => g.against === teams[1].name)!.win) {
         return teams;
@@ -176,7 +195,8 @@ class Team {
     }
     return teams.sort((a, b) => {
       const tiebreaker = b.tiebreaker(teams) - a.tiebreaker(teams);
-      if (tiebreaker === 0) return b.victoryTime - a.victoryTime;
+      if (tiebreaker === 0)
+        return b.strengthOfVictory(allTeams) - a.strengthOfVictory(allTeams);
       return tiebreaker;
     });
   }
@@ -213,6 +233,7 @@ function calculateStandings(
         } else {
           p.unshift([c]);
         }
+        c.placement = 11 - p.length;
         return p;
       },
       [[teamsArray[0]]] as Team[][],
@@ -220,8 +241,8 @@ function calculateStandings(
   return {
     ...name,
     table: grouped
-      .flatMap((teams) =>
-        teams.length === 1 ? teams : Team.head2head(...teams),
+      .flatMap((teams, _, allTeams) =>
+        teams.length === 1 ? teams : Team.head2head(teams, allTeams),
       )
       .map((team, position, standings) => {
         const tied =
