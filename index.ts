@@ -4,43 +4,43 @@ import { serveDir } from "https://deno.land/std@0.166.0/http/file_server.ts";
 const teams = {
   "G2 Esports": {
     short: "G2",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/7/77/G2_Esportslogo_square.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2FG2-FullonDark.png",
   },
   "Team Vitality": {
     short: "VIT",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/8/86/Team_Vitalitylogo_square.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2FVitality-logo-color-outline-rgb.png",
   },
   "SK Gaming": {
     short: "SK",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/2/2f/SK_Gaminglogo_profile.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1643979272144_SK_Monochrome.png",
   },
   "Team Heretics": {
     short: "HRT",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/b/bf/Team_Hereticslogo_square.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1672933861879_Heretics-Full-Color.png",
   },
   Fnatic: {
     short: "FNC",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/f/fc/Fnaticlogo_square.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1631819669150_fnc-2021-worlds.png",
   },
   "Excel Esports": {
     short: "XL",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/9/91/Excel_Esportslogo_square.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2FExcel_FullColor2.png",
   },
   KOI: {
     short: "KOI",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/a/a5/KOI_%28Spanish_Team%29logo_square.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1672933825498_KOI_29logo_square.webp",
   },
   "MAD Lions": {
     short: "MAD",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/e/e5/MAD_Lionslogo_profile.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1631819614211_mad-2021-worlds.png",
   },
   Astralis: {
     short: "AST",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/2/2e/Astralislogo_profile.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2FAST-FullonDark.png",
   },
   "Team BDS": {
     short: "BDS",
-    logo: "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/0/06/Team_BDSlogo_profile.png",
+    logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1641292031788_Team_BDSlogo_square.png",
   },
 };
 const aliases: Record<string, string> = {
