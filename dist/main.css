@@ -14,6 +14,10 @@ figure {
   margin: 0;
 }
 
+.teams a {
+  flex-basis: 20%;
+}
+
 .splits a {
   flex-basis: 25%;
   display: flex;
