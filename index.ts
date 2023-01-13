@@ -49,13 +49,14 @@ const aliases: Record<string, string> = {
   Origen: "Astralis",
   "Misfits Gaming": "Team Heretics",
   "Rogue (European Team)": "KOI",
+  "KOI (Spanish Team)": "KOI",
 };
 
 type ApiGame = {
   blue: string;
   red: string;
-  blueW: "0" | "1";
-  redW: "0" | "1";
+  blueW: "0" | "1" | null;
+  redW: "0" | "1" | null;
   length: string;
 };
 
@@ -80,8 +81,8 @@ function collectData(offset: number): Promise<AdjustedGame[]> {
       return json.cargoquery.map((t) => ({
         red: getAlias(t.title.red),
         blue: getAlias(t.title.blue),
-        redW: t.title.redW === "1",
-        blueW: t.title.blueW === "1",
+        redW: t.title.redW !== null ? t.title.redW === "1" : null,
+        blueW: t.title.redW !== null ? t.title.blueW === "1" : null,
         length: Number.parseFloat(t.title.length),
       }));
     }
@@ -92,8 +93,8 @@ function collectData(offset: number): Promise<AdjustedGame[]> {
 type AdjustedGame = {
   blue: string;
   red: string;
-  blueW: boolean;
-  redW: boolean;
+  blueW: boolean | null;
+  redW: boolean | null;
   length: number;
 };
 
@@ -129,11 +130,12 @@ class Team {
   }
 
   push(game: AdjustedGame) {
-    this.#games.push({
-      against: game.blue === this.#name ? game.red : game.blue,
-      win: game.blue === this.#name ? game.blueW : game.redW,
-      length: game.length,
-    });
+    if (game.blueW !== null)
+      this.#games.push({
+        against: game.blue === this.#name ? game.red : game.blue,
+        win: game.blue === this.#name ? game.blueW! : game.redW!,
+        length: game.length,
+      });
   }
 
   get wins(): number {
@@ -162,6 +164,15 @@ class Team {
 
   set placement(place: number) {
     this.#placement = place;
+  }
+
+  toJSON() {
+    return {
+      name: this.#name,
+      short: this.#short,
+      wins: this.wins,
+      losses: this.losses,
+    };
   }
 
   tiebreaker(against: Team[]): number {
@@ -387,8 +398,38 @@ async function build() {
 
 await build();
 
+function* combine(games: AdjustedGame[]) {
+  const undecided = games.findIndex((g) => g.redW === null);
+  for (let i = undecided; i < 1 << games.length; i++) {
+    const boolArr: boolean[] = [];
+    for (let j = games.length - 1; j >= 0; j--) {
+      boolArr.push(Boolean(i & (1 << j)));
+    }
+    yield calculateStandings(
+      { year: 2023, split: "Winter", half: 1, name: "2023/Winter/1" },
+      games.map((g, i) =>
+        i < undecided ? g : { ...g, redW: boolArr[i], blueW: !boolArr[i] },
+      ),
+    );
+  }
+}
+
+async function calculateProbabilites() {
+  const games = await collectData(entries.length);
+  const results: Record<string, [number, number, number]> = {};
+  for (const standings of combine(games)) {
+    for (const team of standings.table) {
+      // Here we chek the result and calculate the most important games
+    }
+  }
+}
+
 if (Deno.args[0] === "serve") {
-  Deno.serve((req) => serveDir(req, { fsRoot: "dist" }));
+  Deno.serve((req) => {
+    if (new URL(req.url).pathname === "/probability")
+      return calculateProbabilites().then(Response.json);
+    return serveDir(req, { fsRoot: "dist" });
+  });
 } else {
   await Deno.writeTextFile("dist/riot.txt", Deno.env.get("RIOT_KEY") ?? "");
 }
