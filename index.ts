@@ -464,49 +464,8 @@ async function build() {
 
 await build();
 
-function* combine(games: AdjustedGame[]) {
-  const undecided = games.findIndex((g) => g.redW === null);
-  for (let i = undecided; i < 1 << games.length; i++) {
-    const boolArr: boolean[] = [];
-    for (let j = games.length - 1; j >= 0; j--) {
-      boolArr.push(Boolean(i & (1 << j)));
-    }
-    yield calculateStandings(
-      { year: 2023, split: "Winter", half: 1, name: "2023/Winter/1" },
-      games.map((g, i) =>
-        i < undecided ? g : { ...g, redW: boolArr[i], blueW: !boolArr[i] },
-      ),
-    );
-  }
-}
-
-class Probability {
-  #results: [number, number, number] = [0, 0, 0];
-  #games: number[] = Array.from({ length: 9 }, () => 0);
-
-  toJSON() {
-    return {};
-  }
-
-  add(games: AdjustedGame[], result: "tied" | "save" | "out") {}
-}
-
-async function calculateProbabilites() {
-  const games = await collectData(entries.length);
-  const results: Record<string, [number, number, number]> = {};
-  for (const standings of combine(games)) {
-    for (const team of standings.table) {
-      // Here we chek the result and calculate the most important games
-    }
-  }
-}
-
 if (Deno.args[0] === "serve") {
-  Deno.serve((req) => {
-    if (new URL(req.url).pathname === "/probability")
-      return calculateProbabilites().then(Response.json);
-    return serveDir(req, { fsRoot: "dist" });
-  });
+  await Deno.serve((req) => serveDir(req, { fsRoot: "dist" }));
 } else {
   await Deno.writeTextFile("dist/riot.txt", Deno.env.get("RIOT_KEY") ?? "");
 }
