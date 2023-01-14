@@ -1,5 +1,6 @@
 import mustache from "https://cdn.skypack.dev/mustache?dts";
 import { serveDir } from "https://deno.land/std@0.166.0/http/file_server.ts";
+import { _format } from "https://deno.land/std@0.166.0/path/_util.ts";
 
 const teams = {
   "G2 Esports": {
@@ -109,7 +110,8 @@ class Team {
   #short: string;
   #logo: string;
   #games: Game[] = [];
-  #placement = 0;
+  placement = 0;
+  #SoV = -1;
 
   constructor(name: string, short: string, logo: string) {
     this.#name = name;
@@ -158,12 +160,8 @@ class Team {
     return this.#games.filter((g) => g.win).reduce((p, c) => p + c.length, 0);
   }
 
-  get placement() {
-    return this.#placement;
-  }
-
-  set placement(place: number) {
-    this.#placement = place;
+  get SoV() {
+    return this.#SoV;
   }
 
   toJSON() {
@@ -181,40 +179,67 @@ class Team {
     ).length;
   }
 
-  strengthOfVictory(allTeams: Team[][]) {
-    return this.#games
+  strengthOfVictory(allTeams: Array<Team | Team[]>) {
+    this.#SoV = this.#games
       .filter((g) => g.win)
       .reduce(
         (p, c) =>
           p + allTeams.flat().find((t) => t.name === c.against)!.placement,
         0,
       );
+    return this;
   }
 
-  static compare(a: Team, b: Team): number {
-    if (a.wins !== b.wins) return a.wins - b.wins;
-    if (a.last4Wins !== b.last4Wins) return a.last4Wins - b.last4Wins;
-    return 0;
+  compare(other: Team): number {
+    return this.wins - other.wins;
   }
 
-  static head2head(teams: Team[], allTeams: Team[][]): Team[] {
+  static break(teams: Team[]): Array<Team | Team[]> {
+    const tied = teams.sort((a, b) => b.SoV - a.SoV);
+    const result: Array<Team | Team[]> = [];
+    for (let i = 0; i < tied.length; i++) {
+      const sameScore = tied
+        .slice(i + 1)
+        .findLastIndex((t) => t.SoV === tied[i].SoV);
+      if (sameScore === -1) {
+        result.push(tied[i]);
+      } else {
+        result.push(tied.sort((a, b) => a.victoryTime - b.victoryTime));
+        i += sameScore + 1;
+      }
+    }
+    return result;
+  }
+
+  static head2head(teams: Team[]): Array<Team | Team[]> {
     if (teams.length === 2) {
       if (teams[0].#games.find((g) => g.against === teams[1].name)!.win) {
         return teams;
       }
       return [teams[1], teams[0]];
     }
-    return teams.sort((a, b) => {
-      let tiebreaker = b.tiebreaker(teams) - a.tiebreaker(teams);
-      if (tiebreaker === 0) {
-        tiebreaker =
-          b.strengthOfVictory(allTeams) - a.strengthOfVictory(allTeams);
+    const tied = teams.sort(
+      (a, b) => b.tiebreaker(teams) - a.tiebreaker(teams),
+    );
+    const result: Array<Team | Team[]> = [];
+    for (let i = 0; i < tied.length; i++) {
+      const tie = teams[i].tiebreaker(teams);
+      const sameScore = tied
+        .slice(i + 1)
+        .findLastIndex((t) => t.tiebreaker(teams) === tie);
+      if (sameScore === -1) {
+        result.push(tied[i]);
+      } else {
+        const newTie = tied.slice(i, i + sameScore + 2);
+        if (newTie.length === tied.length) {
+          result.push(...Team.break(tied));
+        } else {
+          result.push(...Team.head2head(newTie));
+        }
+        i += sameScore + 1;
       }
-      if (tiebreaker === 0) {
-        tiebreaker = b.victoryTime - a.victoryTime;
-      }
-      return tiebreaker;
-    });
+    }
+    return result;
   }
 }
 
@@ -239,38 +264,79 @@ function calculateStandings(
     teamsArray.find((team) => team.name === getAlias(game.blue))!.push(game);
     teamsArray.find((team) => team.name === getAlias(game.red))!.push(game);
   }
-  const grouped = teamsArray
-    .sort(Team.compare)
-    .slice(1)
-    .reduce(
-      (p, c) => {
-        if (Team.compare(p[0][0], c) === 0) {
-          p[0].push(c);
-        } else {
-          p.unshift([c]);
-        }
-        c.placement = 11 - p.length;
-        return p;
-      },
-      [[teamsArray[0]]] as Team[][],
+  const result: Array<Team | Team[]> = [];
+  const sorted = teamsArray.sort((a, b) => b.compare(a));
+  for (let i = 0; i < sorted.length; i++) {
+    const sameScore = sorted
+      .slice(i + 1)
+      .findLastIndex((t) => t.compare(sorted[i]) === 0);
+    if (sameScore === -1) {
+      sorted[i].placement = 10 - i;
+      result.push(sorted[i]);
+    } else {
+      const newTie = sorted.slice(i, i + sameScore + 2);
+      if (newTie.length === 2) {
+        result.push(
+          ...newTie
+            .sort((a, b) => (b.tiebreaker([a]) === 1 ? 1 : -1))
+            .map((t, x) => {
+              t.placement = 10 - x - i;
+              return t;
+            }),
+        );
+      } else {
+        result.push(
+          newTie.map((t) => {
+            t.placement = 10 - i;
+            return t;
+          }),
+        );
+      }
+      i += sameScore + 1;
+    }
+  }
+  const grouped = result
+    .map((t) =>
+      t instanceof Team
+        ? t.strengthOfVictory(result)
+        : t.map((team) => team.strengthOfVictory(result)),
+    )
+    .flatMap((teams) =>
+      teams instanceof Team ? [teams] : Team.head2head(teams),
     );
+  const table: {
+    team: Team;
+    result: string;
+    position: number;
+  }[] = [];
+  let position = 1;
+  for (const teams of grouped) {
+    if (teams instanceof Team) {
+      table.push({
+        team: teams,
+        position,
+        result: position < 9 ? "safe" : "out",
+      });
+      position++;
+    } else {
+      table.push(
+        ...teams.map((team) => ({
+          team,
+          position,
+          result:
+            position <= 9
+              ? position + teams.length > 9
+                ? "tied"
+                : "safe"
+              : "out",
+        })),
+      );
+      position += teams.length;
+    }
+  }
   return {
     ...name,
-    table: grouped
-      .flatMap((teams, _, allTeams) =>
-        teams.length === 1 ? teams : Team.head2head(teams, allTeams),
-      )
-      .map((team, position, standings) => {
-        const tied =
-          position >= 8
-            ? standings[7].wins === team.wins
-            : team.wins === standings[8].wins;
-        return {
-          team,
-          position: position + 1,
-          result: tied ? "tied" : position < 8 ? "safe" : "out",
-        };
-      }),
+    table,
   };
 }
 
@@ -412,6 +478,17 @@ function* combine(games: AdjustedGame[]) {
       ),
     );
   }
+}
+
+class Probability {
+  #results: [number, number, number] = [0, 0, 0];
+  #games: number[] = Array.from({ length: 9 }, () => 0);
+
+  toJSON() {
+    return {};
+  }
+
+  add(games: AdjustedGame[], result: "tied" | "save" | "out") {}
 }
 
 async function calculateProbabilites() {
