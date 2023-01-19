@@ -16,19 +16,40 @@
     <section>
         <p>This website shows how all the teams in the LEC for the 2023 performed in the 16 single round robins since the LECs inception and franchising. Based on this infromation we determine if and how they would have progressed to the round of the Top 8 in the new LEC format starting in 2023.</p>
     </section>
-    <h4>Teams</h4>
-    <section class="teams">
-        {{#teams}}
-        <a href="/teams/{{info.short}}">
-            <figure>
-                <img src="{{info.logo}}"
-                    alt="Team logo of {{name}}">
-                <figcaption>{{info.short}}</figcaption>
-            </figure>
-        </a>
-        {{/teams}}
-    </section>
-    <h4>Splits</h4>
+    <h4>Current Standings</h4>
+    <table>
+        <colgroup>
+            <col />
+            <col />
+            <col class="right"/>
+            <col class="right"/>
+        </colgroup>
+        <thead>
+            <tr>
+                <th></th>
+                <th>Team</th>
+                <th>Recent games</th>
+                <th>Record</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{#table}}
+            {{#team}}
+            <tr>
+                <td class="{{result}} tight">{{position}}</td>
+                <td><img src="{{{logo}}}" alt="{{name}} Logo" /><a href="/teams/{{short}}">{{name}}</a></td>
+                <td>
+                    {{#last4}}
+                        {{#.}}✔{{/.}}{{^.}}❌{{/.}}
+                    {{/last4}}
+                </td>
+                <td class="right">{{wins}} - {{losses}}</td>
+            </tr>
+            {{/team}}
+        {{/table}}
+        </tbody>
+    </table>
+    <h4>Previous Splits</h4>
     <section class="splits">
         {{#splits}}
         <a href="/splits/{{name}}">

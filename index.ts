@@ -145,7 +145,7 @@ class Team {
   }
 
   get losses(): number {
-    return 9 - this.wins;
+    return this.#games.length - this.wins;
   }
 
   get last4Wins(): number {
@@ -362,8 +362,8 @@ const round = (n: number, percent = false) =>
   n === 0 ? 0 : (Math.round(n * 100) / 100) * (percent ? 100 : 1);
 
 async function build() {
-  const [split, team, footer, main] = await Promise.all(
-    ["split", "team", "footer", "main"].map((path) =>
+  const [split, team, footer] = await Promise.all(
+    ["split", "team", "footer"].map((path) =>
       Deno.readTextFile(`./templates/${path}.mustache`),
     ),
   );
@@ -446,26 +446,40 @@ async function build() {
       }),
     ),
   );
-
-  await Deno.writeTextFile(
-    `dist/index.html`,
-    mustache.render(
-      main,
-      {
-        umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
-        umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
-        teams: Object.entries(teams).map(([name, info]) => ({ name, info })),
-        splits: entries,
-      },
-      { footer },
-    ),
-  );
 }
 
 await build();
 
 if (Deno.args[0] === "serve") {
-  await Deno.serve((req) => serveDir(req, { fsRoot: "dist" }));
+  await Deno.serve(async (req) => {
+    if (new URL(req.url).pathname === "/") {
+      const data = await collectData(entries.length);
+      const [footer, main] = await Promise.all(
+        ["footer", "main"].map((path) =>
+          Deno.readTextFile(`./templates/${path}.mustache`),
+        ),
+      );
+      return new Response(
+        mustache.render(
+          main,
+          {
+            umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
+            umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
+            splits: entries,
+            table: calculateStandings(
+              { year: 2023, split: "Winter", half: 1, name: "Current" },
+              data.filter((f) => f.blueW !== null),
+            ).table,
+          },
+          { footer },
+        ),
+        {
+          headers: { "Content-Type": "text/html" },
+        },
+      );
+    }
+    return serveDir(req, { fsRoot: "dist" });
+  });
 } else {
   await Deno.writeTextFile("dist/riot.txt", Deno.env.get("RIOT_KEY") ?? "");
 }

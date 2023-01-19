@@ -21,6 +21,14 @@ th:nth-child(n + 3),
 td:nth-child(n + 3) {
   text-align: end;
 }
+td img {
+  max-height: 3rem;
+  vertical-align: middle;
+  padding-right: 2rem;
+}
+td {
+  vertical-align: middle;
+}
 footer {
   display: flex;
   flex-direction: column;

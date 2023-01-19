@@ -26,7 +26,7 @@
             <tr>
                 <th></th>
                 <th>Team</th>
-                <th>Last 4 games</th>
+                <th>Recent games</th>
                 <th>Record</th>
             </tr>
         </thead>
@@ -35,7 +35,7 @@
             {{#team}}
             <tr>
                 <td class="{{result}} tight">{{position}}</td>
-                <td><a href="/teams/{{short}}">{{name}}</a></td>
+                <td><img src="{{{logo}}}" alt="{{name}} Logo" /><a href="/teams/{{short}}">{{name}}</a></td>
                 <td>
                     {{#last4}}
                         {{#.}}✔{{/.}}{{^.}}❌{{/.}}
