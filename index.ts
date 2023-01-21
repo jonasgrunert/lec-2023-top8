@@ -165,6 +165,16 @@ class Team {
     return this.#SoV;
   }
 
+  get probability() {
+    if (this.wins > 2) return 100;
+    const remains = 9 - this.#games.length;
+    let result = 0;
+    for (let i = 3 - this.wins; i <= remains; i++) {
+      result += nCr(remains, i);
+    }
+    return round(result / Math.pow(2, remains), true);
+  }
+
   toJSON() {
     return {
       name: this.#name,
@@ -362,6 +372,15 @@ const standings = await Promise.all(
 const round = (n: number, percent = false) =>
   n === 0 ? 0 : (Math.round(n * 100) / 100) * (percent ? 100 : 1);
 
+function nCr(n: number, r: number) {
+  const k = 2 + r > n ? n - r : r;
+  let result = 1;
+  for (let i = 1; i <= k; i++) {
+    result = (result * (n + 1 - i)) / i;
+  }
+  return result;
+}
+
 async function build() {
   const [split, team, footer] = await Promise.all(
     ["split", "team", "footer"].map((path) =>
@@ -471,7 +490,7 @@ async function serveIndex() {
       { footer },
     ),
     {
-      headers: { "Content-Type": "text/html" },
+      headers: { "Content-Type": "text/html; charset=UTF-8" },
     },
   );
 }

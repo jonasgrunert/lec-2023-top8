@@ -29,6 +29,20 @@
                 <th></th>
                 <th>Team</th>
                 <th>Recent games</th>
+                <th>
+                    Probability
+                    <button class="faq" id="probability-faq">❔</button>
+                    <dialog id="probability-faq-modal">
+                        <form method="dialog">
+                            <h3>Help Probability</h3>
+                            <p>This is the probability the team will advance to the next round. While there are more than three game days remaining this is an estimation based on the assumption, that with at least three wins a tiebreaker is forced or you are safe.</p>
+                            <p>Every match has a 50/50 chacne to either be won or lost. This means we do not do any complicated assumptions but simply calculate this as a continous Laplace experiment. If you have recommendations on how to improve this method let me know.</p>
+                            <br>
+                            <p>If there is only one week of games left this will switch to an accurate probabilty based on all remaining scenarios. Still every game outcome will be seen as 50/50.</p>
+                            <button type="submit" style="float: right">Close</button>
+                        </form>
+                    </dialog>
+                </th>
                 <th>Record</th>
             </tr>
         </thead>
@@ -43,7 +57,8 @@
                         {{#.}}✔{{/.}}{{^.}}❌{{/.}}
                     {{/last4}}
                 </td>
-                <td class="right">{{wins}} - {{losses}}</td>
+                <td>{{probability}}%</td>
+                <td>{{wins}} - {{losses}}</td>
             </tr>
             {{/team}}
         {{/table}}

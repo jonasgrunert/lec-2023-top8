@@ -23,10 +23,3 @@ div > * {
 .out {
   color: red;
 }
-.faq {
-  padding: 0;
-  border-radius: 50%;
-  width: 2em;
-  height: 2em;
-  line-height: 1.5;
-}
