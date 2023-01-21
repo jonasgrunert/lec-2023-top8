@@ -203,7 +203,7 @@ class Team {
 
   compare(other: Team): number {
     const wins = this.wins - other.wins;
-    return wins ? wins : this.losses - other.losses;
+    return wins ? wins : other.losses - this.losses;
   }
 
   static break(teams: Team[]): Array<Team | Team[]> {
