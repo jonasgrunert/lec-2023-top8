@@ -449,8 +449,6 @@ async function build() {
   );
 }
 
-await build();
-
 async function serveIndex() {
   const data = await collectData(entries.length);
   const [footer, main] = await Promise.all(
@@ -490,4 +488,6 @@ if (Deno.args?.[0] !== "build") {
         return serveDir(req, { fsRoot: "dist" });
     }
   });
+} else {
+  await build();
 }
