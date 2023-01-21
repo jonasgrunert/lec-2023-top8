@@ -1,6 +1,7 @@
 import mustache from "https://cdn.skypack.dev/mustache?dts";
 import { serveDir } from "https://deno.land/std@0.166.0/http/file_server.ts";
 import { _format } from "https://deno.land/std@0.166.0/path/_util.ts";
+import { serve } from "https://deno.land/std@0.166.0/http/server.ts";
 
 const teams = {
   "G2 Esports": {
@@ -450,36 +451,43 @@ async function build() {
 
 await build();
 
-if (Deno.args[0] === "serve") {
-  await Deno.serve(async (req) => {
-    if (new URL(req.url).pathname === "/") {
-      const data = await collectData(entries.length);
-      const [footer, main] = await Promise.all(
-        ["footer", "main"].map((path) =>
-          Deno.readTextFile(`./templates/${path}.mustache`),
-        ),
-      );
-      return new Response(
-        mustache.render(
-          main,
-          {
-            umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
-            umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
-            splits: entries,
-            table: calculateStandings(
-              { year: 2023, split: "Winter", half: 1, name: "Current" },
-              data.filter((f) => f.blueW !== null),
-            ).table,
-          },
-          { footer },
-        ),
-        {
-          headers: { "Content-Type": "text/html" },
-        },
-      );
+async function serveIndex() {
+  const data = await collectData(entries.length);
+  const [footer, main] = await Promise.all(
+    ["footer", "main"].map((path) =>
+      Deno.readTextFile(`./templates/${path}.mustache`),
+    ),
+  );
+  return new Response(
+    mustache.render(
+      main,
+      {
+        umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
+        umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
+        splits: entries,
+        table: calculateStandings(
+          { year: 2023, split: "Winter", half: 1, name: "Current" },
+          data.filter((f) => f.blueW !== null),
+        ).table,
+      },
+      { footer },
+    ),
+    {
+      headers: { "Content-Type": "text/html" },
+    },
+  );
+}
+
+if (Deno.args?.[0] !== "build") {
+  await serve((req) => {
+    const path = new URL(req.url).pathname;
+    switch (path) {
+      case "/":
+        return serveIndex();
+      case "riot.txt":
+        return new Response(Deno.env.get("RIOT_KEY") ?? "");
+      default:
+        return serveDir(req, { fsRoot: "dist" });
     }
-    return serveDir(req, { fsRoot: "dist" });
   });
-} else {
-  await Deno.writeTextFile("dist/riot.txt", Deno.env.get("RIOT_KEY") ?? "");
 }
