@@ -490,7 +490,7 @@ async function serveIndex() {
       { footer },
     ),
     {
-      headers: { "Content-Type": "text/html; charset=UTF-8" },
+      headers: { "Content-Type": "text/html; charset=UTF-8", "Cache-Control": `max-age=${5*60}` },
     },
   );
 }
