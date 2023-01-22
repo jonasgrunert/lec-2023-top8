@@ -216,7 +216,7 @@ class Team {
       if (sameScore === -1) {
         result.push(tied[i]);
       } else {
-        result.push(tied.sort((a, b) => a.victoryTime - b.victoryTime));
+        result.push(tied.slice(i, sameScore+1).sort((a, b) => a.victoryTime - b.victoryTime));
         i += sameScore + 1;
       }
     }
@@ -235,7 +235,7 @@ class Team {
     );
     const result: Array<Team | Team[]> = [];
     for (let i = 0; i < tied.length; i++) {
-      const tie = teams[i].tiebreaker(teams);
+      const tie = tied[i].tiebreaker(teams);
       const sameScore = tied
         .slice(i + 1)
         .findLastIndex((t) => t.tiebreaker(teams) === tie);
