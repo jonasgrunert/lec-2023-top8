@@ -216,7 +216,7 @@ class Team {
       if (sameScore === -1) {
         result.push(tied[i]);
       } else {
-        result.push(tied.slice(i, sameScore+1).sort((a, b) => a.victoryTime - b.victoryTime));
+        result.push(tied.slice(i, i + sameScore + 2).sort((a, b) => a.victoryTime - b.victoryTime));
         i += sameScore + 1;
       }
     }
