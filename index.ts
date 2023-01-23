@@ -194,8 +194,9 @@ class Team {
     this.#SoV = this.#games
       .filter((g) => g.win)
       .reduce(
-        (p, c) =>
-          p + allTeams.flat().find((t) => t.name === c.against)!.placement,
+        (p: number, c) =>
+          p +
+          (allTeams.flat().find((t) => t.name === c.against)?.placement ?? 0),
         0,
       );
     return this;
@@ -216,7 +217,11 @@ class Team {
       if (sameScore === -1) {
         result.push(tied[i]);
       } else {
-        result.push(tied.slice(i, i + sameScore + 2).sort((a, b) => a.victoryTime - b.victoryTime));
+        result.push(
+          tied
+            .slice(i, i + sameScore + 2)
+            .sort((a, b) => a.victoryTime - b.victoryTime),
+        );
         i += sameScore + 1;
       }
     }
@@ -225,7 +230,7 @@ class Team {
 
   static head2head(teams: Team[]): Array<Team | Team[]> {
     if (teams.length === 2) {
-      if (teams[0].#games.find((g) => g.against === teams[1].name)!.win) {
+      if (teams[0].#games.find((g) => g.against === teams[1].name)?.win) {
         return teams;
       }
       return [teams[1], teams[0]];
@@ -491,7 +496,10 @@ async function serveIndex() {
       { footer },
     ),
     {
-      headers: { "Content-Type": "text/html; charset=UTF-8", "Cache-Control": `max-age=${5*60}` },
+      headers: {
+        "Content-Type": "text/html; charset=UTF-8",
+        "Cache-Control": `max-age=${5 * 60}`,
+      },
     },
   );
 }
