@@ -17,7 +17,7 @@ const teams = {
     logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1643979272144_SK_Monochrome.png",
   },
   "Team Heretics": {
-    short: "HRT",
+    short: "TH",
     logo: "https://am-a.akamaihd.net/image?resize=70:&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1672933861879_Heretics-Full-Color.png",
   },
   Fnatic: {
@@ -220,7 +220,7 @@ class Team {
         result.push(
           tied
             .slice(i, i + sameScore + 2)
-            .sort((a, b) => a.victoryTime - b.victoryTime),
+            .sort((a, b) => b.victoryTime - a.victoryTime),
         );
         i += sameScore + 1;
       }
