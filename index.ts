@@ -154,7 +154,7 @@ class Team {
   }
 
   get last4(): boolean[] {
-    return this.#games.slice(5).map((g) => g.win);
+    return this.#games.slice(this.#games.length - 4).map((g) => g.win);
   }
 
   get victoryTime(): number {
