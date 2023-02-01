@@ -177,7 +177,6 @@ class Team {
 
   toJSON() {
     return {
-      name: this.#name,
       short: this.#short,
       wins: this.wins,
       losses: this.losses,
@@ -506,6 +505,32 @@ async function build() {
   );
 }
 
+async function buildFoldySheet() {
+  const data = await collectData(entries.length);
+  const unknown = data.filter((g) => g.blueW === null);
+  const standings: Record<string, ReturnType<typeof calculateStandings>> = {};
+  if (unknown.length <= 15) {
+    for (let i = 0; i < 1 << unknown.length; i++) {
+      for (let j = 0; j < unknown.length; j++) {
+        const v = Boolean(i & (1 << j));
+        data.at(-j)!.blueW = v;
+        data.at(-j)!.redW = !v;
+      }
+      standings[i.toString(2)] = calculateStandings(
+        {
+          year: 2023,
+          split: "Winter",
+          half: 1,
+          name: "Current",
+        },
+        data,
+      );
+    }
+  }
+  await Deno.mkdir("./dist/data", { recursive: true });
+  await Deno.writeTextFile("./dist/data/foldy.json", JSON.stringify(standings));
+}
+
 async function serveIndex() {
   const data = await collectData(entries.length);
   const [footer, main] = await Promise.all(
@@ -536,6 +561,8 @@ async function serveIndex() {
   );
 }
 
+async function serveFoldySheet() {}
+
 const serveContent = () =>
   serve((req) => {
     const path = new URL(req.url).pathname;
@@ -559,6 +586,7 @@ switch (Deno.args?.[0]) {
     break;
   }
   default: {
+    await buildFoldySheet();
     await build();
     await serveContent();
   }
