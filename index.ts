@@ -292,7 +292,14 @@ function calculateStandings(
       result.push(sorted[i]);
     } else {
       const newTie = sorted.slice(i, i + sameScore + 2);
-      if (newTie.length === 2) {
+      if ((i <= 7 && i + newTie.length >= 7) || newTie.length !== 2) {
+        result.push(
+          newTie.map((t) => {
+            t.placement = 10 - i;
+            return t;
+          }),
+        );
+      } else {
         result.push(
           ...newTie
             .sort((a, b) => (b.tiebreaker([a]) === 1 ? 1 : -1))
@@ -300,13 +307,6 @@ function calculateStandings(
               t.placement = 10 - x - i;
               return t;
             }),
-        );
-      } else {
-        result.push(
-          newTie.map((t) => {
-            t.placement = 10 - i;
-            return t;
-          }),
         );
       }
       i += sameScore + 1;
@@ -318,9 +318,41 @@ function calculateStandings(
         ? t.strengthOfVictory(result)
         : t.map((team) => team.strengthOfVictory(result)),
     )
-    .flatMap((teams) =>
-      teams instanceof Team ? [teams] : Team.head2head(teams),
-    );
+    .flatMap((teams) => {
+      if (teams instanceof Team) {
+        return [teams];
+      }
+      if (
+        teams[0].placement >= 3 &&
+        teams[0].placement - teams.length + 1 < 3
+      ) {
+        if (teams.length > 3) {
+          const sorted = Team.head2head(teams);
+          let pos = teams[0].placement;
+          const all = [];
+          let i = -1;
+          while (pos > 3) {
+            i++;
+            const team = sorted[i];
+            if (team instanceof Team) {
+              if (pos > 3) {
+                all.push(team);
+              }
+              pos--;
+            } else {
+              if (pos - team.length > 3) {
+                all.push(team);
+              }
+              pos -= team.length;
+            }
+          }
+          all.push(sorted.slice(i).flat());
+          return all;
+        }
+        return [teams];
+      }
+      return Team.head2head(teams);
+    });
   const table: {
     team: Team;
     result: string;
@@ -504,8 +536,8 @@ async function serveIndex() {
   );
 }
 
-if (Deno.args?.[0] !== "build") {
-  await serve((req) => {
+const serveContent = () =>
+  serve((req) => {
     const path = new URL(req.url).pathname;
     switch (path) {
       case "/":
@@ -516,6 +548,18 @@ if (Deno.args?.[0] !== "build") {
         return serveDir(req, { fsRoot: "dist" });
     }
   });
-} else {
-  await build();
+
+switch (Deno.args?.[0]) {
+  case "build": {
+    await build();
+    break;
+  }
+  case "serve": {
+    await serveContent();
+    break;
+  }
+  default: {
+    await build();
+    await serveContent();
+  }
 }
