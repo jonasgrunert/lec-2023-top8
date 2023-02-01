@@ -554,12 +554,12 @@ switch (Deno.args?.[0]) {
     await build();
     break;
   }
-  case "serve": {
+  case "dev": {
+    await build();
     await serveContent();
     break;
   }
   default: {
-    await build();
     await serveContent();
   }
 }
