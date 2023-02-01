@@ -407,7 +407,7 @@ const standings = await Promise.all(
 );
 
 const round = (n: number, percent = false) =>
-  n === 0 ? 0 : (Math.round(n * 100) / 100) * (percent ? 100 : 1);
+  n === 0 ? 0 : (Math.round(n * 10000) / 10000) * (percent ? 100 : 1);
 
 function nCr(n: number, r: number) {
   const k = 2 + r > n ? n - r : r;
@@ -506,27 +506,55 @@ async function build() {
   );
 }
 
+class BinaryTree {
+  // deno-lint-ignore no-explicit-any
+  #data: any = [];
+
+  set(key: string, data: unknown) {
+    let curr = this.#data;
+    for (let i = 0; i < key.length; i++) {
+      const num = Number.parseInt(key[i]);
+      if (i === key.length - 1) {
+        curr[num] = data;
+        return;
+      }
+      if (curr[num]) {
+        curr = curr[num];
+      } else {
+        curr[num] = [];
+        curr = curr[num];
+      }
+    }
+  }
+
+  get all() {
+    return this.#data.flat(15);
+  }
+
+  toJSON() {
+    return this.#data;
+  }
+}
+
 async function buildFoldySheet() {
   const data = await collectData(entries.length);
-  const unknown = data.filter((g) => g.blueW === null);
-  const standings: Record<string, ReturnType<typeof calculateStandings>> = {};
-  if (unknown.length <= 15) {
-    for (let i = 0; i < 1 << unknown.length; i++) {
-      for (let j = 0; j < unknown.length; j++) {
-        const v = Boolean(i & (1 << j));
-        data.at(-j)!.blueW = v;
-        data.at(-j)!.redW = !v;
-      }
-      standings[i.toString(2)] = calculateStandings(
-        {
-          year: 2023,
-          split: "Winter",
-          half: 1,
-          name: "Current",
-        },
-        data,
-      );
+  const standings = new BinaryTree();
+  for (let i = 0; i < 1 << 15; i++) {
+    for (let j = 0; j < 15; j++) {
+      const v = Boolean(i & (1 << j));
+      data.at(-j - 1)!.blueW = v;
+      data.at(-j - 1)!.redW = !v;
     }
+    const res = calculateStandings(
+      {
+        year: 2023,
+        split: "Winter",
+        half: 1,
+        name: "Current",
+      },
+      data,
+    ).table;
+    standings.set(i.toString(2).padStart(15, "0"), res);
   }
   await Deno.mkdir("./dist/data", { recursive: true });
   await Deno.writeTextFile("./dist/data/foldy.json", JSON.stringify(standings));
