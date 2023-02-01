@@ -2,6 +2,6 @@
   "tasks": {
     "serve": "deno run --unstable -A --watch=templates/ ./index.ts",
     "build": "deno run -A ./index.ts build",
-    "dev": "deno run -A --watch=templates/ ./index.ts"
+    "dev": "deno run -A --watch=templates/ ./index.ts dev"
   }
 }

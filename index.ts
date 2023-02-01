@@ -419,6 +419,7 @@ function nCr(n: number, r: number) {
 }
 
 async function build() {
+  await buildFoldySheet();
   const [split, team, footer] = await Promise.all(
     ["split", "team", "footer"].map((path) =>
       Deno.readTextFile(`./templates/${path}.mustache`),
@@ -581,13 +582,12 @@ switch (Deno.args?.[0]) {
     await build();
     break;
   }
-  case "serve": {
+  case "dev": {
+    await build();
     await serveContent();
     break;
   }
   default: {
-    await buildFoldySheet();
-    await build();
     await serveContent();
   }
 }
