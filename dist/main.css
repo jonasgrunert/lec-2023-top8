@@ -30,6 +30,6 @@ figure {
     flex-basis: 50%;
   }
 }
-.table tr:nth-child(8) {
+table tr:nth-child(8) {
   border-bottom: 2px var(--text-bright) solid;
 }

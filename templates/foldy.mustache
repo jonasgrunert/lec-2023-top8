@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LEC 2023 Top 8 Prediction</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/foldy.css">
+    <script src="/index.js"></script>
+    <script async defer data-website-id="{{umamiKey}}" src="{{umamiUrl}}"></script>
+</head>
+<body>
+    <header>
+        <h2>LEC 2023 Winter Foldy Sheet</h2>
+    </header>
+    <h4>Current Standings</h4>
+    <table>
+        <thead>
+            <tr>
+                {{#remainingGames}}
+                <th>
+                    {{blue.short}}<br>vs<br>{{red.short}}
+                </th>
+                {{/remainingGames}}
+                <th>Tied</th>
+                <th>Out</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{#scenarios}}
+            <tr class="overview">
+                {{#results}}
+                <td>{{short}}</td>
+                {{/results}}
+                <td>
+                    {{#tied}}<p>{{.}}</p>{{/tied}}
+                    {{^tied}}-{{/tied}}
+                </td>
+                <td>
+                    {{#out}}<p>{{.}}</p>{{/out}}
+                    {{^out}}-{{/out}}
+                </td>
+            </tr>
+            <tr class="detail-table">
+                <td colspan={{colspan}}>
+                    <table class="standings">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Team</th>
+                                <th>Record</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {{#table}}
+                            {{#team}}
+                            <tr>
+                                <td class="{{result}} tight">{{position}}</td>
+                                <td><a href="/teams/{{short}}"><img src="{{{logo}}}" alt="{{name}} Logo" />{{name}}</a></td>
+                                <td>{{wins}} - {{losses}}</td>
+                            </tr>
+                            {{/team}}
+                        {{/table}}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        {{/scenarios}}
+        </tbody>
+    </table>
+    {{> footer}}
+</body>
+</html>

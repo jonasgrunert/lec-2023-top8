@@ -17,8 +17,8 @@ td.out {
 table {
   table-layout: auto;
 }
-th:nth-child(n + 3),
-td:nth-child(n + 3) {
+.standings th:nth-child(n + 3),
+.standings td:nth-child(n + 3) {
   text-align: end;
 }
 td img {

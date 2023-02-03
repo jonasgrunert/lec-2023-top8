@@ -17,28 +17,23 @@
         <p>This website shows how all the teams in the LEC for the 2023 performed in the 16 single round robins since the LECs inception and franchising. Based on this infromation we determine if and how they would have progressed to the round of the Top 8 in the new LEC format starting in 2023.</p>
     </section>
     <h4>Current Standings</h4>
-    <table>
-        <colgroup>
-            <col />
-            <col />
-            <col class="right"/>
-            <col class="right"/>
-        </colgroup>
+    <table class="standings">
         <thead>
             <tr>
                 <th></th>
                 <th>Team</th>
                 <th>Recent games</th>
-                <th>
+                <th colspan=2>
                     Probability
                     <button class="faq" id="probability-faq">❔</button>
                     <dialog id="probability-faq-modal">
                         <form method="dialog">
                             <h3>Help Probability</h3>
                             <p>This is the probability the team will advance to the next round. While there are more than three game days remaining this is an estimation based on the assumption, that with at least three wins a tiebreaker is forced or you are safe.</p>
-                            <p>Every match has a 50/50 chacne to either be won or lost. This means we do not do any complicated assumptions but simply calculate this as a continous Laplace experiment. If you have recommendations on how to improve this method let me know.</p>
+                            <p>The left hadn probability is when you are atleast and tied the right hand one is you are safe.</p>
+                            <p>Every match has a 50/50 chance to either be won or lost. This means we do not do any complicated assumptions but simply calculate this as a continous Laplace experiment. If you have recommendations on how to improve this method let me know.</p>
                             <br>
-                            <p>If there is only one week of games left this will switch to an accurate probabilty based on all remaining scenarios. Still every game outcome will be seen as 50/50.</p>
+                            <p>If there is only one week of games left this will switch to an accurate probabilty based on all remaining scenarios. Still every game outcome will be seen as 50/50. <a href="/foldy">Foldy Sheet</p>
                             <button type="submit" style="float: right">Close</button>
                         </form>
                     </dialog>
@@ -51,13 +46,14 @@
             {{#team}}
             <tr>
                 <td class="{{result}} tight">{{position}}</td>
-                <td><img src="{{{logo}}}" alt="{{name}} Logo" /><a href="/teams/{{short}}">{{name}}</a></td>
+                <td><a href="/teams/{{short}}"><img src="{{{logo}}}" alt="{{name}} Logo" />{{name}}</a></td>
                 <td>
                     {{#last4}}
                         {{#.}}✔{{/.}}{{^.}}❌{{/.}}
                     {{/last4}}
                 </td>
-                <td>{{probability}}%</td>
+                <td>{{probTied}}%</td>
+                <td>{{probIn}}%</td>
                 <td>{{wins}} - {{losses}}</td>
             </tr>
             {{/team}}

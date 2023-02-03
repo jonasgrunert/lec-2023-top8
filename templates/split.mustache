@@ -15,13 +15,7 @@
         <h2>{{year}} {{split}} {{half}}</h2>
         <h2>{{#next}}<a href="/splits/{{name}}">></a>{{/next}}</h2>
     </header>
-    <table>
-        <colgroup>
-            <col />
-            <col />
-            <col class="right"/>
-            <col class="right"/>
-        </colgroup>
+    <table class="standings">
         <thead>
             <tr>
                 <th></th>
@@ -35,7 +29,7 @@
             {{#team}}
             <tr>
                 <td class="{{result}} tight">{{position}}</td>
-                <td><img src="{{{logo}}}" alt="{{name}} Logo" /><a href="/teams/{{short}}">{{name}}</a></td>
+                <td><a href="/teams/{{short}}"><img src="{{{logo}}}" alt="{{name}} Logo" />{{name}}</a></td>
                 <td>
                     {{#last4}}
                         {{#.}}✔{{/.}}{{^.}}❌{{/.}}

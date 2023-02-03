@@ -81,8 +81,8 @@ function collectData(offset: number): Promise<AdjustedGame[]> {
     if (res.ok) {
       const json: { cargoquery: { title: ApiGame }[] } = await res.json();
       return json.cargoquery.map((t) => ({
-        red: getAlias(t.title.red),
-        blue: getAlias(t.title.blue),
+        red: getAlias(t.title.red) as keyof typeof teams,
+        blue: getAlias(t.title.blue) as keyof typeof teams,
         redW: t.title.redW !== null ? t.title.redW === "1" : null,
         blueW: t.title.redW !== null ? t.title.blueW === "1" : null,
         length: Number.parseFloat(t.title.length),
@@ -93,8 +93,8 @@ function collectData(offset: number): Promise<AdjustedGame[]> {
 }
 
 type AdjustedGame = {
-  blue: string;
-  red: string;
+  blue: keyof typeof teams;
+  red: keyof typeof teams;
   blueW: boolean | null;
   redW: boolean | null;
   length: number;
@@ -113,6 +113,7 @@ class Team {
   #games: Game[] = [];
   placement = 0;
   #SoV = -1;
+  probability?: [number, number];
 
   constructor(name: string, short: string, logo: string) {
     this.#name = name;
@@ -165,7 +166,10 @@ class Team {
     return this.#SoV;
   }
 
-  get probability() {
+  get probTied() {
+    if (this.probability) {
+      return round(this.probability[0], true);
+    }
     if (this.wins > 2) return 100;
     const remains = 9 - this.#games.length;
     let result = 0;
@@ -175,9 +179,24 @@ class Team {
     return round(result / Math.pow(2, remains), true);
   }
 
+  get probIn() {
+    if (this.probability) {
+      return round(this.probability[1], true);
+    }
+    if (this.wins > 4) return 100;
+    const remains = 9 - this.#games.length;
+    let result = 0;
+    for (let i = 5 - this.wins; i <= remains; i++) {
+      result += nCr(remains, i);
+    }
+    return round(result / Math.pow(2, remains), true);
+  }
+
   toJSON() {
     return {
       short: this.#short,
+      name: this.#name,
+      logo: this.#logo,
       wins: this.wins,
       losses: this.losses,
     };
@@ -406,8 +425,11 @@ const standings = await Promise.all(
   ),
 );
 
-const round = (n: number, percent = false) =>
-  n === 0 ? 0 : (Math.round(n * 10000) / 10000) * (percent ? 100 : 1);
+const round = (n: number, percent = false) => {
+  if (n === 0) return 0;
+  const m = String((Math.round(n * 10000) / 10000) * (percent ? 100 : 1));
+  return m.slice(0, m.search(/\./) === -1 ? m.length : m.search(/\./) + 3);
+};
 
 function nCr(n: number, r: number) {
   const k = 2 + r > n ? n - r : r;
@@ -506,39 +528,14 @@ async function build() {
   );
 }
 
-class BinaryTree {
-  // deno-lint-ignore no-explicit-any
-  #data: any = [];
-
-  set(key: string, data: unknown) {
-    let curr = this.#data;
-    for (let i = 0; i < key.length; i++) {
-      const num = Number.parseInt(key[i]);
-      if (i === key.length - 1) {
-        curr[num] = data;
-        return;
-      }
-      if (curr[num]) {
-        curr = curr[num];
-      } else {
-        curr[num] = [];
-        curr = curr[num];
-      }
-    }
-  }
-
-  get all() {
-    return this.#data.flat(15);
-  }
-
-  toJSON() {
-    return this.#data;
-  }
-}
+type FoldySheet = Record<
+  string,
+  ReturnType<typeof calculateStandings>["table"]
+>;
 
 async function buildFoldySheet() {
   const data = await collectData(entries.length);
-  const standings = new BinaryTree();
+  const standings: FoldySheet = {};
   for (let i = 0; i < 1 << 15; i++) {
     for (let j = 0; j < 15; j++) {
       const v = Boolean(i & (1 << j));
@@ -554,7 +551,7 @@ async function buildFoldySheet() {
       },
       data,
     ).table;
-    standings.set(i.toString(2).padStart(15, "0"), res);
+    standings[i.toString(2).padStart(15, "0")] = res;
   }
   await Deno.mkdir("./dist/data", { recursive: true });
   await Deno.writeTextFile("./dist/data/foldy.json", JSON.stringify(standings));
@@ -562,6 +559,33 @@ async function buildFoldySheet() {
 
 async function serveIndex() {
   const data = await collectData(entries.length);
+  const { scenarios } = await getScenarios();
+  const tiedProbability = Object.fromEntries(
+    Object.values(teams).map((t) => [t.short, 0]),
+  );
+  const outProbability = Object.fromEntries(
+    Object.values(teams).map((t) => [t.short, 0]),
+  );
+  for (const scenario of scenarios) {
+    for (const team of scenario.out) {
+      outProbability[team]++;
+    }
+    for (const team of scenario.tied) {
+      tiedProbability[team]++;
+    }
+  }
+  const table = calculateStandings(
+    { year: 2023, split: "Winter", half: 1, name: "Current" },
+    data.filter((f) => f.blueW !== null),
+  ).table;
+  const amount = scenarios.length;
+  table.forEach((t) => {
+    t.team.probability = [
+      (amount - outProbability[t.team.short]) / amount,
+      (amount - outProbability[t.team.short] - tiedProbability[t.team.short]) /
+        amount,
+    ];
+  });
   const [footer, main] = await Promise.all(
     ["footer", "main"].map((path) =>
       Deno.readTextFile(`./templates/${path}.mustache`),
@@ -574,10 +598,7 @@ async function serveIndex() {
         umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
         umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
         splits: entries,
-        table: calculateStandings(
-          { year: 2023, split: "Winter", half: 1, name: "Current" },
-          data.filter((f) => f.blueW !== null),
-        ).table,
+        table,
       },
       { footer },
     ),
@@ -590,7 +611,79 @@ async function serveIndex() {
   );
 }
 
-async function serveFoldySheet() {}
+async function getScenarios() {
+  const [games, scenarios] = await Promise.all([
+    collectData(entries.length),
+    Deno.readTextFile(`./dist/data/foldy.json`).then(
+      (t) => JSON.parse(t) as FoldySheet,
+    ),
+  ]);
+  const remainingGames = games.filter((g) => g.blueW === null);
+  const decided = games
+    .slice(30, remainingGames.length === 0 ? undefined : -remainingGames.length)
+    .map((g) => (g.blueW ? 1 : 0))
+    .join("");
+  const arr = [];
+  for (const [key, table] of Object.entries(scenarios)) {
+    if (key.startsWith(decided)) {
+      const results = key
+        .slice(decided.length)
+        .split("")
+        .map((g, i) =>
+          g === "1"
+            ? teams[remainingGames[i].blue]
+            : teams[remainingGames[i].red],
+        );
+      const out = table
+        .filter((t) => t.result === "out")
+        .map((t) => t.team.short);
+      const tied = table
+        .filter((t) => t.result === "tied")
+        .map((t) => t.team.short);
+      arr.push({
+        results,
+        table,
+        out,
+        tied,
+        colspan: results.length + 2,
+      });
+    }
+  }
+  return {
+    remainingGames: remainingGames.map((g) => ({
+      red: teams[g.red],
+      blue: teams[g.blue],
+    })),
+    scenarios: arr,
+  };
+}
+
+async function serveFoldySheet() {
+  const { remainingGames, scenarios } = await getScenarios();
+  const [footer, foldy] = await Promise.all(
+    ["footer", "foldy"].map((path) =>
+      Deno.readTextFile(`./templates/${path}.mustache`),
+    ),
+  );
+  return new Response(
+    mustache.render(
+      foldy,
+      {
+        umamiKey: Deno.env.get("UMAMI_KEY") ?? "",
+        umamiUrl: Deno.env.get("UMAMI_URL") ?? "",
+        scenarios,
+        remainingGames,
+      },
+      { footer },
+    ),
+    {
+      headers: {
+        "Content-Type": "text/html; charset=UTF-8",
+        "Cache-Control": `max-age=${30 * 60}`,
+      },
+    },
+  );
+}
 
 const serveContent = () =>
   serve((req) => {
@@ -598,6 +691,8 @@ const serveContent = () =>
     switch (path) {
       case "/":
         return serveIndex();
+      case "/foldy":
+        return serveFoldySheet();
       case "riot.txt":
         return new Response(Deno.env.get("RIOT_KEY") ?? "");
       default:
