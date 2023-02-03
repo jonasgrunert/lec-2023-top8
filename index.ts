@@ -641,6 +641,7 @@ async function getScenarios() {
         .filter((t) => t.result === "tied")
         .map((t) => t.team.short);
       arr.push({
+        key,
         results,
         table,
         out,
@@ -650,7 +651,8 @@ async function getScenarios() {
     }
   }
   return {
-    remainingGames: remainingGames.map((g) => ({
+    remainingGames: remainingGames.map((g, i) => ({
+      id: i,
       red: teams[g.red],
       blue: teams[g.blue],
     })),

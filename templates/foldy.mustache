@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/index.css">
     <link rel="stylesheet" href="/foldy.css">
     <script src="/index.js"></script>
+    <script src="/foldy.js"></script>
     <script async defer data-website-id="{{umamiKey}}" src="{{umamiUrl}}"></script>
 </head>
 <body>
@@ -19,7 +20,18 @@
             <tr>
                 {{#remainingGames}}
                 <th>
-                    {{blue.short}}<br>vs<br>{{red.short}}
+                    <label for="{{id}}blue">
+                        <input type="radio" name="{{id}}result" id="{{id}}blue" value="{{blue.short}}">
+                        {{blue.short}}
+                    </label>
+                    <label for="{{id}}draw">
+                        <input type="radio" name="{{id}}result" id="{{id}}draw" value="draw">
+                        Draw
+                    </label>
+                    <label for="{{id}}red">
+                        <input type="radio" name="{{id}}result" id="{{id}}red" value="{{blue.red}}"">
+                        {{red.short}}
+                    </label>
                 </th>
                 {{/remainingGames}}
                 <th>Tied</th>
@@ -28,7 +40,7 @@
         </thead>
         <tbody>
         {{#scenarios}}
-            <tr class="overview">
+            <tr class="overview" id="{{key}}">
                 {{#results}}
                 <td>{{short}}</td>
                 {{/results}}

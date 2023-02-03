@@ -13,8 +13,3 @@ tr:hover {
 .standings tr:nth-child(8) {
   border-bottom: 2px var(--text-bright) solid;
 }
-
-.standings th:nth-child(n + 2),
-.standings td:nth-child(n + 2) {
-  text-align: end;
-}
