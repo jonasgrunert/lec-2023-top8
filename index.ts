@@ -418,6 +418,7 @@ for (let year = 2019; year <= 2022; year++) {
     }
   }
 }
+entries.push({year:2023, split:"Winter", half: 1, name: "2023/Winter/1"})
 
 const standings = await Promise.all(
   entries.map((name, i) =>
