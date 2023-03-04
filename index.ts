@@ -72,7 +72,7 @@ function collectData(offset: number): Promise<AdjustedGame[]> {
       format: "json",
       limit: "45",
       where:
-        'T.League= "LoL EMEA Championship" AND T.IsPlayoffs = "0" AND MS.IsTiebreaker = "0" AND T.Date IS NOT NULL',
+        'T.League= "LoL EMEA Championship" AND T.IsPlayoffs = "0" AND MS.IsTiebreaker = "0" AND T.Date IS NOT NULL AND MS.BestOf = 1',
       join_on: "T.OverviewPage=MS.OverviewPage, MS.MatchId = SB.MatchId",
       order_by: "MS.DateTime_UTC",
       offset: (offset * 45).toString(),
@@ -418,7 +418,7 @@ for (let year = 2019; year <= 2022; year++) {
     }
   }
 }
-entries.push({year:2023, split:"Winter", half: 1, name: "2023/Winter/1"})
+entries.push({ year: 2023, split: "Winter", half: 1, name: "2023/Winter/1" });
 
 const standings = await Promise.all(
   entries.map((name, i) =>
