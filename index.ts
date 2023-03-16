@@ -155,6 +155,9 @@ class Team {
   }
 
   get last4(): boolean[] {
+    if (this.#games.length < 4) {
+      return this.#games.map((g) => g.win);
+    }
     return this.#games.slice(this.#games.length - 4).map((g) => g.win);
   }
 
@@ -560,33 +563,37 @@ async function buildFoldySheet() {
 
 async function serveIndex() {
   const data = await collectData(entries.length);
-  const { scenarios } = await getScenarios();
-  const tiedProbability = Object.fromEntries(
-    Object.values(teams).map((t) => [t.short, 0]),
-  );
-  const outProbability = Object.fromEntries(
-    Object.values(teams).map((t) => [t.short, 0]),
-  );
-  for (const scenario of scenarios) {
-    for (const team of scenario.out) {
-      outProbability[team]++;
-    }
-    for (const team of scenario.tied) {
-      tiedProbability[team]++;
-    }
-  }
   const table = calculateStandings(
-    { year: 2023, split: "Winter", half: 1, name: "Current" },
+    { year: 2023, split: "Spring", half: 1, name: "Current" },
     data.filter((f) => f.blueW !== null),
   ).table;
-  const amount = scenarios.length;
-  table.forEach((t) => {
-    t.team.probability = [
-      (amount - outProbability[t.team.short]) / amount,
-      (amount - outProbability[t.team.short] - tiedProbability[t.team.short]) /
-        amount,
-    ];
-  });
+  if (data.filter((g) => g.blueW === null).length <= 15) {
+    const { scenarios } = await getScenarios();
+    const tiedProbability = Object.fromEntries(
+      Object.values(teams).map((t) => [t.short, 0]),
+    );
+    const outProbability = Object.fromEntries(
+      Object.values(teams).map((t) => [t.short, 0]),
+    );
+    for (const scenario of scenarios) {
+      for (const team of scenario.out) {
+        outProbability[team]++;
+      }
+      for (const team of scenario.tied) {
+        tiedProbability[team]++;
+      }
+    }
+    const amount = scenarios.length;
+    table.forEach((t) => {
+      t.team.probability = [
+        (amount - outProbability[t.team.short]) / amount,
+        (amount -
+          outProbability[t.team.short] -
+          tiedProbability[t.team.short]) /
+          amount,
+      ];
+    });
+  }
   const [footer, main] = await Promise.all(
     ["footer", "main"].map((path) =>
       Deno.readTextFile(`./templates/${path}.mustache`),
