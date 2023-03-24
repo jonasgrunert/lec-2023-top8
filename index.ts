@@ -367,7 +367,7 @@ function calculateStandings(
               pos -= team.length;
             }
           }
-          all.push(sorted.slice(i).flat());
+          all.push(sorted.slice(i + 1).flat());
           return all;
         }
         return [teams];
