@@ -367,7 +367,7 @@ function calculateStandings(
               pos -= team.length;
             }
           }
-          all.push(sorted.slice(i + 1).flat());
+          all.push(sorted.slice(i === 0 ? 1 : i).flat());
           return all;
         }
         return [teams];
@@ -482,12 +482,20 @@ async function build() {
           path,
           team: table.find((t) => t.team.name === name)!,
         }));
-        const percentage = (kind: string) =>
-          round(
-            splits.filter((s) => s.team.result === kind).length /
-              standings.length,
-            true,
-          );
+        const percentage = (kind: string) => {
+          try {
+            round(
+              splits.filter((s) => s.team.result === kind).length /
+                standings.length,
+              true,
+            );
+          } catch (e) {
+            console.log(
+              name,
+              standings.filter((_, i) => splits[i].team === undefined),
+            );
+          }
+        };
         return Deno.writeTextFile(
           `dist/teams/${short}/index.html`,
           mustache.render(
