@@ -482,20 +482,12 @@ async function build() {
           path,
           team: table.find((t) => t.team.name === name)!,
         }));
-        const percentage = (kind: string) => {
-          try {
-            round(
-              splits.filter((s) => s.team.result === kind).length /
-                standings.length,
-              true,
-            );
-          } catch (e) {
-            console.log(
-              name,
-              standings.filter((_, i) => splits[i].team === undefined),
-            );
-          }
-        };
+        const percentage = (kind: string) =>
+          round(
+            splits.filter((s) => s.team.result === kind).length /
+              standings.length,
+            true,
+          );
         return Deno.writeTextFile(
           `dist/teams/${short}/index.html`,
           mustache.render(
